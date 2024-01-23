@@ -6,12 +6,9 @@ The defaults will deploy an advanced deployment of Ghost, where all components a
 This includes:
 - EC2 Instance running Flatcar Linux (t2/t3.micro)
   - Config to run the Ghost Docker container
-  - Optional EBS swap volume
-- An S3 bucket to host assets
+  - EBS swap volume
 - A separate RDS instance to host the database
-- IAM role for authenticating with the database
 - An Application Load Balancer
-- A CDN using Cloudfront
 - ACM certificates for TLS
 
 ## DNS configuration 
