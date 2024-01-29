@@ -4,12 +4,14 @@ Module for deploying a Ghost blog to AWS
 The defaults will deploy an advanced deployment of Ghost, where all components are covered under the first 12 months of the AWS free-tier.
 
 This includes:
-- EC2 Instance running Flatcar Linux (t2/t3.micro)
+- A VPC with a public and private subnets
+- EC2 Instance running Flatcar Linux (`t2`/`t3.micro`)
   - Config to run the Ghost Docker container
   - EBS swap volume
-- A separate RDS instance to host the database
+- A separate RDS instance to host the database (`db.t3.micro`)
 - An Application Load Balancer
 - ACM certificates for TLS
+- A Cloudfront CDN
 
 ## DNS configuration 
 Some additional configuration is required after running the module. The details are given as outputs.
@@ -58,6 +60,7 @@ Some additional configuration is required after running the module. The details 
 | [aws_volume_attachment.swap](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
 | [aws_ami.flatcar_stable_latest](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_ec2_instance_types.free_tier](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_instance_types) | data source |
+| [aws_rds_orderable_db_instance.free-tier](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/rds_orderable_db_instance) | data source |
 | [ct_config.machine-ignitions](https://registry.terraform.io/providers/poseidon/ct/latest/docs/data-sources/config) | data source |
 | [template_file.machine-configs](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
 

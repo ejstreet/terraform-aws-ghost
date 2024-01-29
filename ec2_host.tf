@@ -13,6 +13,7 @@ data "aws_ec2_instance_types" "free_tier" {
 locals {
   instance_type = var.instance_type != null ? var.instance_type : data.aws_ec2_instance_types.free_tier.instance_types[0]
   target_subnet = module.vpc.public_subnets[keys(module.vpc.public_subnets)[0]]
+  target_az     = local.target_subnet.availability_zone
 }
 
 data "aws_ami" "flatcar_stable_latest" {
@@ -48,6 +49,8 @@ resource "aws_instance" "flatcar" {
   tags = {
     Name = var.instance_name
   }
+
+  user_data_replace_on_change = true
 
   lifecycle {
     ignore_changes = [
