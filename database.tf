@@ -1,13 +1,12 @@
 data "aws_rds_orderable_db_instance" "free-tier" {
-  engine         = "mysql"
-  engine_version = "8.0"
+  engine = "mysql"
 
   # The following are all available under the free tier
   preferred_instance_classes = ["db.t4g.micro", "db.t3.micro", "db.t2.micro"]
 }
 
 locals {
-  db_instance_class = aws_rds_orderable_db_instance.free-tier.instance_class
+  db_instance_class = data.aws_rds_orderable_db_instance.free-tier.instance_class
 }
 
 resource "aws_db_instance" "ghost" {
@@ -21,8 +20,10 @@ resource "aws_db_instance" "ghost" {
   username          = "root"
   availability_zone = local.target_az
 
+  iam_database_authentication_enabled = true
+
   db_subnet_group_name   = module.vpc.db_subnet_group.name
-  vpc_security_group_ids = [module.vpc.private_security_group.id]
+  vpc_security_group_ids = [aws_security_group.db.id]
 
   apply_immediately   = true
   skip_final_snapshot = true

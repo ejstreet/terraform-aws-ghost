@@ -2,18 +2,49 @@ variant: flatcar
 version: 1.0.0
 systemd:
   units:
+    - name: docker-network.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Docker Network service
+        After=docker.service
+        Requires=docker.service
+        [Service]
+        Type=oneshot
+        TimeoutStartSec=0
+        ExecStartPre=/usr/bin/sh -c "network rm flatcar || true"
+        ExecStart=/usr/bin/docker network create flatcar
+        RemainAfterExit=yes
+        [Install]
+        WantedBy=multi-user.target
     - name: ghost.service
       enabled: true
       contents: |
         [Unit]
         Description=Ghost service
-        After=docker.service
+        After=docker-network.service
         Requires=docker.service
         [Service]
         TimeoutStartSec=0
         ExecStartPre=-/usr/bin/docker rm --force ghost
-        ExecStart=/usr/bin/docker run --name ghost --pull always --log-driver=journald -v ghost:/var/lib/ghost/content ${env_vars} -p 8080:2368 docker.io/${ghost_image}
+        ExecStart=/usr/bin/docker run --name ghost --net flatcar --pull always --log-driver=journald -v /home/core/ghost/:/var/lib/ghost/content ${env_vars} docker.io/${ghost_image}
         ExecStop=/usr/bin/docker stop ghost
+        Restart=always
+        RestartSec=5s
+        [Install]
+        WantedBy=multi-user.target
+    - name: nginx.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Nginx service
+        After=docker-network.service
+        Requires=docker.service
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/usr/bin/docker rm --force nginx
+        ExecStart=/usr/bin/docker run --name nginx --net flatcar --pull always --log-driver=journald -v /home/core/nginx/:/etc/nginx/conf.d/:ro -p 80:80 docker.io/nginx:1.25
+        ExecStop=/usr/bin/docker stop nginx
         Restart=always
         RestartSec=5s
         [Install]
@@ -37,13 +68,22 @@ storage:
       label: swap
       with_mount_unit: true
   files:
-    - path: /home/core/works
+    - path: /home/core/nginx/default.conf
       filesystem: root
       mode: 0755
       contents:
         inline: |
-          #!/bin/bash
-          set -euo pipefail
-           # This script demonstrates how templating and variable substitution works when using Terraform templates for Container Linux Configs.
-          hostname="$(hostname)"
-          echo My name is ${name} and the hostname is $${hostname}  
+          server {
+            listen       80 default_server;
+            listen  [::]:80 default_server;
+
+            location / {
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto https;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header Host ${host};
+              proxy_pass http://ghost:2368;
+            }
+
+            client_max_body_size 50m;
+          }

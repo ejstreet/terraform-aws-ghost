@@ -42,9 +42,13 @@ resource "aws_instance" "flatcar" {
   ami           = data.aws_ami.flatcar_stable_latest.image_id
   key_name      = aws_key_pair.ssh.key_name
 
-  associate_public_ip_address = true
-  subnet_id                   = local.target_subnet.id
-  vpc_security_group_ids      = [module.vpc.public_security_group.id]
+  subnet_id              = local.target_subnet.id
+  vpc_security_group_ids = [aws_security_group.flatcar.id]
+
+  ebs_block_device {
+    volume_size = "2" # GB
+    device_name = "/dev/sdf"
+  }
 
   tags = {
     Name = var.instance_name
@@ -57,23 +61,6 @@ resource "aws_instance" "flatcar" {
       ami,
     ]
   }
-}
-
-resource "aws_ebs_volume" "swap" {
-  availability_zone = aws_instance.flatcar.availability_zone
-  size              = 8
-
-  type = "gp3"
-
-  tags = {
-    Name = "${var.instance_name}-swap"
-  }
-}
-
-resource "aws_volume_attachment" "swap" {
-  device_name = "/dev/sdf"
-  volume_id   = aws_ebs_volume.swap.id
-  instance_id = aws_instance.flatcar.id
 }
 
 data "ct_config" "machine-ignitions" {
@@ -98,97 +85,7 @@ data "template_file" "machine-configs" {
     ssh_keys    = jsonencode(var.ssh_keys)
     name        = var.instance_name
     ghost_image = var.ghost_image
+    host        = var.domain_name
     env_vars    = "-e ${join(" -e ", [for k, v in local.env_vars : "${k}=${v}"])}"
-  }
-}
-
-resource "aws_security_group" "securitygroup" {
-  vpc_id = module.vpc.vpc_id
-}
-
-resource "aws_security_group_rule" "outgoing_any" {
-  security_group_id = aws_security_group.securitygroup.id
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
-resource "aws_security_group_rule" "incoming_any" {
-  security_group_id = aws_security_group.securitygroup.id
-  type              = "ingress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
-resource "aws_lb" "public" {
-  name               = var.instance_name
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [module.vpc.public_security_group.id]
-  subnets            = [for subnet in module.vpc.public_subnets : subnet.id]
-}
-
-resource "aws_lb_listener" "https" {
-  load_balancer_arn = aws_lb.public.arn
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.cert.arn
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.ghost.arn
-  }
-}
-
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.public.arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    type = "redirect"
-
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
-  }
-}
-
-resource "aws_lb_target_group" "ghost" {
-  name     = var.instance_name
-  port     = 8080
-  protocol = "HTTP"
-  vpc_id   = module.vpc.vpc_id
-
-  health_check {
-    protocol = "HTTP"
-    matcher  = 301
-    path     = "/ghost/api/admin/site/"
-  }
-}
-
-resource "aws_lb_target_group_attachment" "ghost" {
-  target_group_arn = aws_lb_target_group.ghost.arn
-  target_id        = aws_instance.flatcar.id
-  port             = 8080
-}
-
-resource "aws_acm_certificate" "cert" {
-  domain_name       = var.domain_name
-  validation_method = "DNS"
-
-  tags = {
-    Name = var.instance_name
-  }
-
-  lifecycle {
-    create_before_destroy = true
   }
 }

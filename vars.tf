@@ -9,6 +9,12 @@ variable "domain_name" {
   description = "The fully qualified domain name used to access the website. Does not require a protocol prefix."
 }
 
+variable "admin_ip" {
+  type        = string
+  description = "IP address with subnet mask (ideally `/32`) of admin to allow direct access to the instance. Only creates security group rule if set."
+  default     = null
+}
+
 variable "ghost_image" {
   type        = string
   description = "The image of Ghost to run."
@@ -36,14 +42,9 @@ variable "instance_type" {
   description = "Instance type for the machine. If unset, a free-tier instance will be used."
 }
 
-variable "vpc_cidr" {
-  type    = string
-  default = "172.16.0.0/16"
-}
-
-variable "subnet_cidrs" {
+variable "uncached_paths" {
   type    = list(string)
-  default = ["172.16.10.0/24", "172.16.20.0/24"]
+  default = ["/ghost/*", "/members/*"]
 }
 
 variable "vpc" {
