@@ -9,10 +9,12 @@ resource "aws_subnet" "public" {
   cidr_block        = each.value
   availability_zone = each.key
 
+  enable_resource_name_dns_a_record_on_launch = true
+  map_public_ip_on_launch                     = true
+
   tags = {
-    Name                     = "${var.name}-subnet-public-${each.key}"
-    security-tier            = "public"
-    "kubernetes.io/role/elb" = 1
+    Name          = "${var.name}-subnet-public-${each.key}"
+    security-tier = "public"
   }
 }
 
