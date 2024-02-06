@@ -6,15 +6,17 @@ The defaults will deploy an advanced deployment of Ghost, where all components a
 This includes:
 - A VPC with a public and private subnets
 - EC2 Instance running Flatcar Linux (`t2`/`t3.micro`)
-  - Config to run the Ghost Docker container
+  - Configuration to run Ghost and Nginx Docker containers
   - EBS swap volume
-- A separate RDS instance to host the database (`db.t3.micro`)
-- An Application Load Balancer
-- ACM certificates for TLS
+  - Security groups to prevent direct access to the instance
+- A separate RDS instance to host the database (`db.`(`t4g`/`t3`/`t2`)`.micro`)
 - A Cloudfront CDN
+- ACM certificates for TLS
+
 
 ## DNS configuration 
-Some additional configuration is required after running the module. The details are given as outputs.
+Some additional configuration is required after running the module. The details are given as outputs. You can either enter these into your DNS provider manually, or use this module in a larger terraform deployment that creates the DNS records.
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
