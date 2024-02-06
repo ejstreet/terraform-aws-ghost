@@ -42,9 +42,13 @@ resource "aws_instance" "flatcar" {
   ami           = data.aws_ami.flatcar_stable_latest.image_id
   key_name      = aws_key_pair.ssh.key_name
 
-  associate_public_ip_address = true
-  subnet_id                   = local.target_subnet.id
-  vpc_security_group_ids      = [module.vpc.public_security_group.id]
+  subnet_id              = local.target_subnet.id
+  vpc_security_group_ids = [aws_security_group.flatcar.id]
+
+  ebs_block_device {
+    volume_size = "2" # GB
+    device_name = "/dev/sdf"
+  }
 
   tags = {
     Name = var.instance_name
@@ -57,23 +61,6 @@ resource "aws_instance" "flatcar" {
       ami,
     ]
   }
-}
-
-resource "aws_ebs_volume" "swap" {
-  availability_zone = aws_instance.flatcar.availability_zone
-  size              = 8
-
-  type = "gp3"
-
-  tags = {
-    Name = "${var.instance_name}-swap"
-  }
-}
-
-resource "aws_volume_attachment" "swap" {
-  device_name = "/dev/sdf"
-  volume_id   = aws_ebs_volume.swap.id
-  instance_id = aws_instance.flatcar.id
 }
 
 data "ct_config" "machine-ignitions" {
@@ -98,6 +85,7 @@ data "template_file" "machine-configs" {
     ssh_keys    = jsonencode(var.ssh_keys)
     name        = var.instance_name
     ghost_image = var.ghost_image
+    host        = var.domain_name
     env_vars    = "-e ${join(" -e ", [for k, v in local.env_vars : "${k}=${v}"])}"
   }
 }

@@ -14,8 +14,8 @@ data "aws_ec2_managed_prefix_list" "cloudfront" {
 resource "aws_vpc_security_group_ingress_rule" "cloudfront_to_flatcar" {
   description       = "HTTPS from CloudFront"
   security_group_id = aws_security_group.flatcar.id
-  from_port         = 443
-  to_port           = 443
+  from_port         = 80
+  to_port           = 80
   ip_protocol       = "tcp"
   prefix_list_id    = data.aws_ec2_managed_prefix_list.cloudfront.id
 }

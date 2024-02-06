@@ -42,14 +42,9 @@ variable "instance_type" {
   description = "Instance type for the machine. If unset, a free-tier instance will be used."
 }
 
-variable "vpc_cidr" {
-  type    = string
-  default = "172.16.0.0/16"
-}
-
-variable "subnet_cidrs" {
+variable "uncached_paths" {
   type    = list(string)
-  default = ["172.16.10.0/24", "172.16.20.0/24"]
+  default = ["/ghost/*", "/members/*"]
 }
 
 variable "vpc" {

@@ -10,10 +10,11 @@ systemd:
         After=docker.service
         Requires=docker.service
         [Service]
+        Type=oneshot
         TimeoutStartSec=0
+        ExecStartPre=/usr/bin/sh -c "network rm flatcar || true"
         ExecStart=/usr/bin/docker network create flatcar
-        Restart=always
-        RestartSec=5s
+        RemainAfterExit=yes
         [Install]
         WantedBy=multi-user.target
     - name: ghost.service
@@ -26,7 +27,7 @@ systemd:
         [Service]
         TimeoutStartSec=0
         ExecStartPre=-/usr/bin/docker rm --force ghost
-        ExecStart=/usr/bin/docker run --name ghost --pull always --log-driver=journald -v /home/core/ghost/:/var/lib/ghost/content ${env_vars} docker.io/${ghost_image}
+        ExecStart=/usr/bin/docker run --name ghost --net flatcar --pull always --log-driver=journald -v /home/core/ghost/:/var/lib/ghost/content ${env_vars} docker.io/${ghost_image}
         ExecStop=/usr/bin/docker stop ghost
         Restart=always
         RestartSec=5s
@@ -42,7 +43,7 @@ systemd:
         [Service]
         TimeoutStartSec=0
         ExecStartPre=-/usr/bin/docker rm --force nginx
-        ExecStart=/usr/bin/docker run --name nginx --pull always --log-driver=journald -v /home/core/nginx/:/etc/nginx/conf.d/:ro -p 80:80 docker.io/nginx:1.25
+        ExecStart=/usr/bin/docker run --name nginx --net flatcar --pull always --log-driver=journald -v /home/core/nginx/:/etc/nginx/conf.d/:ro -p 80:80 docker.io/nginx:1.25
         ExecStop=/usr/bin/docker stop nginx
         Restart=always
         RestartSec=5s
@@ -66,3 +67,23 @@ storage:
       wipe_filesystem: true
       label: swap
       with_mount_unit: true
+  files:
+    - path: /home/core/nginx/default.conf
+      filesystem: root
+      mode: 0755
+      contents:
+        inline: |
+          server {
+            listen       80 default_server;
+            listen  [::]:80 default_server;
+
+            location / {
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto https;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header Host ${host};
+              proxy_pass http://ghost:2368;
+            }
+
+            client_max_body_size 50m;
+          }

@@ -48,17 +48,19 @@ Some additional configuration is required after running the module. The details 
 | [aws_acm_certificate.cdn_cert](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate) | resource |
 | [aws_cloudfront_distribution.ghost](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution) | resource |
 | [aws_db_instance.ghost](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance) | resource |
-| [aws_ebs_volume.swap](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume) | resource |
 | [aws_instance.flatcar](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
 | [aws_key_pair.ssh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair) | resource |
 | [aws_security_group.db](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_security_group.flatcar](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
-| [aws_volume_attachment.swap](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
 | [aws_vpc_security_group_egress_rule.to_all](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.admin_to_flatcar](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.cloudfront_to_flatcar](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.flatcar_to_db](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [aws_ami.flatcar_stable_latest](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
+| [aws_cloudfront_cache_policy.caching-optimized](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/cloudfront_cache_policy) | data source |
+| [aws_cloudfront_cache_policy.disabled](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/cloudfront_cache_policy) | data source |
+| [aws_cloudfront_origin_request_policy.all-viewer](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/cloudfront_origin_request_policy) | data source |
+| [aws_cloudfront_response_headers_policy.simple-cors](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/cloudfront_response_headers_policy) | data source |
 | [aws_ec2_instance_types.free_tier](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_instance_types) | data source |
 | [aws_ec2_managed_prefix_list.cloudfront](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_managed_prefix_list) | data source |
 | [aws_rds_orderable_db_instance.free-tier](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/rds_orderable_db_instance) | data source |
@@ -77,13 +79,14 @@ Some additional configuration is required after running the module. The details 
 | <a name="input_instance_name"></a> [instance\_name](#input\_instance\_name) | Name used for the instance | `string` | `"Ghost"` | no |
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Instance type for the machine. If unset, a free-tier instance will be used. | `string` | `null` | no |
 | <a name="input_ssh_keys"></a> [ssh\_keys](#input\_ssh\_keys) | SSH public keys for user 'core' | `list(string)` | n/a | yes |
-| <a name="input_subnet_cidrs"></a> [subnet\_cidrs](#input\_subnet\_cidrs) | n/a | `list(string)` | <pre>[<br>  "172.16.10.0/24",<br>  "172.16.20.0/24"<br>]</pre> | no |
+| <a name="input_uncached_paths"></a> [uncached\_paths](#input\_uncached\_paths) | n/a | `list(string)` | <pre>[<br>  "/ghost/*",<br>  "/members/*"<br>]</pre> | no |
 | <a name="input_vpc"></a> [vpc](#input\_vpc) | n/a | <pre>object({<br>    cidr                 = string<br>    public_cidrs         = list(string)<br>    public_ingress_rules = map(any)<br>    public_egress_rules  = map(any)<br>    private_cidrs        = list(string)<br>  })</pre> | <pre>{<br>  "cidr": "10.0.0.0/16",<br>  "private_cidrs": [<br>    "10.0.100.0/24",<br>    "10.0.102.0/24"<br>  ],<br>  "public_cidrs": [<br>    "10.0.0.0/24",<br>    "10.0.2.0/24"<br>  ],<br>  "public_egress_rules": {<br>    "Allow All": {<br>      "cidr_ipv4": "0.0.0.0/0"<br>    }<br>  },<br>  "public_ingress_rules": {<br>    "HTTP": {<br>      "cidr_ipv4": "0.0.0.0/0",<br>      "from_port": 80,<br>      "ip_protocol": "TCP"<br>    },<br>    "HTTPS": {<br>      "cidr_ipv4": "0.0.0.0/0",<br>      "from_port": 443,<br>      "ip_protocol": "TCP"<br>    }<br>  }<br>}</pre> | no |
-| <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | n/a | `string` | `"172.16.0.0/16"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_cdn_certificate_validation"></a> [cdn\_certificate\_validation](#output\_cdn\_certificate\_validation) | n/a |
+| <a name="output_cdn_domain_name"></a> [cdn\_domain\_name](#output\_cdn\_domain\_name) | n/a |
+| <a name="output_ec2_ip"></a> [ec2\_ip](#output\_ec2\_ip) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
