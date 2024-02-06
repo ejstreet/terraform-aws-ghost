@@ -9,6 +9,12 @@ variable "domain_name" {
   description = "The fully qualified domain name used to access the website. Does not require a protocol prefix."
 }
 
+variable "admin_ip" {
+  type        = string
+  description = "IP address with subnet mask (ideally `/32`) of admin to allow direct access to the instance. Only creates security group rule if set."
+  default     = null
+}
+
 variable "ghost_image" {
   type        = string
   description = "The image of Ghost to run."
