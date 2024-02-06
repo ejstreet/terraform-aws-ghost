@@ -3,13 +3,16 @@
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5.0 |
 
 ## Modules
 
@@ -53,8 +56,6 @@ No modules.
 | <a name="input_public_cidrs"></a> [public\_cidrs](#input\_public\_cidrs) | n/a | `list(string)` | n/a | yes |
 | <a name="input_public_egress_rules"></a> [public\_egress\_rules](#input\_public\_egress\_rules) | n/a | `map(any)` | `{}` | no |
 | <a name="input_public_ingress_rules"></a> [public\_ingress\_rules](#input\_public\_ingress\_rules) | n/a | `map(any)` | `{}` | no |
-| <a name="input_region"></a> [region](#input\_region) | n/a | `any` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | n/a | `map(string)` | `{}` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | n/a | `string` | n/a | yes |
 
 ## Outputs

@@ -34,13 +34,9 @@ resource "aws_cloudfront_distribution" "ghost" {
     target_origin_id = aws_instance.flatcar.id
     compress         = true
 
-    forwarded_values {
-      query_string = true
-
-      cookies {
-        forward = "all"
-      }
-    }
+    cache_policy_id            = data.aws_cloudfront_cache_policy.caching-optimized.id
+    origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all-viewer.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.simple-cors.id
 
     viewer_protocol_policy = "redirect-to-https"
   }

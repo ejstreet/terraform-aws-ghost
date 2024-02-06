@@ -1,8 +1,6 @@
 module "vpc" {
   source = "./vpc"
 
-  region = var.aws_region
-
   name = var.instance_name
 
   vpc_cidr = var.vpc.cidr

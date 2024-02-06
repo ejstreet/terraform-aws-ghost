@@ -1,6 +1,6 @@
 resource "aws_key_pair" "ssh" {
   key_name   = var.instance_name
-  public_key = var.ssh_keys.0
+  public_key = var.ssh_keys[0]
 }
 
 data "aws_ec2_instance_types" "free_tier" {
