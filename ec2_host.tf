@@ -69,7 +69,18 @@ locals {
     database__connection__user     = "root",
     database__connection__host     = aws_db_instance.ghost.address,
     database__connection__password = var.db_password
-    url                            = "https://${var.domain_name}"
+
+    mail__from                      = aws_ses_email_identity.default.email
+    mail__transport                 = "SMTP"
+    mail__logger                    = "true"
+    mail__options__host             = "email-smtp.${var.aws_region}.amazonaws.com"
+    mail__options__port             = "465"
+    mail__options__service          = "SES"
+    mail__options__secureConnection = "true"
+    mail__options__auth__user       = aws_iam_access_key.smtp_user.id
+    mail__options__auth__pass       = aws_iam_access_key.smtp_user.ses_smtp_password_v4
+
+    url = "https://${var.domain_name}"
   }
 }
 
@@ -81,6 +92,6 @@ data "template_file" "machine-configs" {
     name        = var.instance_name
     ghost_image = var.ghost_image
     host        = var.domain_name
-    env_vars    = "-e ${join(" -e ", [for k, v in local.env_vars : "${k}=${v}"])}"
+    env_vars    = join(" ", [for k, v in local.env_vars : "-e ${k}=${v}"])
   }
 }

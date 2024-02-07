@@ -9,6 +9,12 @@ variable "domain_name" {
   description = "The fully qualified domain name used to access the website. Does not require a protocol prefix."
 }
 
+variable "email_domain" {
+  type        = string
+  description = "Sets the domain name for from emails. If left unset, the `domain_name` will be used instead."
+  default     = null
+}
+
 variable "admin_ip" {
   type        = string
   description = "IP address with subnet mask (ideally `/32`) of admin to allow direct access to the instance. Only creates security group rule if set."

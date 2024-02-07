@@ -50,11 +50,18 @@ Some additional configuration is required after running the module. The details 
 | [aws_acm_certificate.cdn_cert](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate) | resource |
 | [aws_cloudfront_distribution.ghost](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution) | resource |
 | [aws_db_instance.ghost](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance) | resource |
-| [aws_iam_role.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_access_key.smtp_user](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_access_key) | resource |
+| [aws_iam_policy.ses_sender](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_user.smtp_user](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user) | resource |
+| [aws_iam_user_policy_attachment.test-attach](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user_policy_attachment) | resource |
 | [aws_instance.flatcar](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
 | [aws_key_pair.ssh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair) | resource |
 | [aws_security_group.db](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_security_group.flatcar](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [aws_ses_domain_dkim.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ses_domain_dkim) | resource |
+| [aws_ses_domain_identity.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ses_domain_identity) | resource |
+| [aws_ses_domain_mail_from.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ses_domain_mail_from) | resource |
+| [aws_ses_email_identity.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ses_email_identity) | resource |
 | [aws_vpc_security_group_egress_rule.to_all](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.admin_to_flatcar](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.cloudfront_to_flatcar](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
@@ -66,7 +73,7 @@ Some additional configuration is required after running the module. The details 
 | [aws_cloudfront_response_headers_policy.simple-cors](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/cloudfront_response_headers_policy) | data source |
 | [aws_ec2_instance_types.free_tier](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_instance_types) | data source |
 | [aws_ec2_managed_prefix_list.cloudfront](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_managed_prefix_list) | data source |
-| [aws_iam_policy_document.instance_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.ses_sender](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_rds_orderable_db_instance.free-tier](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/rds_orderable_db_instance) | data source |
 | [ct_config.machine-ignitions](https://registry.terraform.io/providers/poseidon/ct/latest/docs/data-sources/config) | data source |
 | [template_file.machine-configs](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
@@ -79,6 +86,7 @@ Some additional configuration is required after running the module. The details 
 | <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS Region to use for running the machine | `string` | n/a | yes |
 | <a name="input_db_password"></a> [db\_password](#input\_db\_password) | The password for accessing the database. It is recommended to pass this as an environment variable, e.g. `TF_VAR_db_password`. | `string` | n/a | yes |
 | <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name) | The fully qualified domain name used to access the website. Does not require a protocol prefix. | `string` | n/a | yes |
+| <a name="input_email_domain"></a> [email\_domain](#input\_email\_domain) | Sets the domain name for from emails. If left unset, the `domain_name` will be used instead. | `string` | `null` | no |
 | <a name="input_ghost_image"></a> [ghost\_image](#input\_ghost\_image) | The image of Ghost to run. | `string` | n/a | yes |
 | <a name="input_instance_name"></a> [instance\_name](#input\_instance\_name) | Name used for the instance | `string` | `"Ghost"` | no |
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Instance type for the machine. If unset, a free-tier instance will be used. | `string` | `null` | no |
@@ -90,7 +98,10 @@ Some additional configuration is required after running the module. The details 
 
 | Name | Description |
 |------|-------------|
-| <a name="output_cdn_certificate_validation"></a> [cdn\_certificate\_validation](#output\_cdn\_certificate\_validation) | n/a |
-| <a name="output_cdn_domain_name"></a> [cdn\_domain\_name](#output\_cdn\_domain\_name) | n/a |
-| <a name="output_ec2_ip"></a> [ec2\_ip](#output\_ec2\_ip) | n/a |
+| <a name="output_dns_acm_validation_records"></a> [dns\_acm\_validation\_records](#output\_dns\_acm\_validation\_records) | n/a |
+| <a name="output_dns_cloudfront_record"></a> [dns\_cloudfront\_record](#output\_dns\_cloudfront\_record) | n/a |
+| <a name="output_dns_mail_dkim_records"></a> [dns\_mail\_dkim\_records](#output\_dns\_mail\_dkim\_records) | n/a |
+| <a name="output_dns_mail_from_mx_record"></a> [dns\_mail\_from\_mx\_record](#output\_dns\_mail\_from\_mx\_record) | n/a |
+| <a name="output_dns_mail_from_txt_record"></a> [dns\_mail\_from\_txt\_record](#output\_dns\_mail\_from\_txt\_record) | n/a |
+| <a name="output_ec2_connection_details"></a> [ec2\_connection\_details](#output\_ec2\_connection\_details) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
