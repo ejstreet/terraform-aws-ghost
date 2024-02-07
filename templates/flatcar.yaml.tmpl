@@ -12,7 +12,7 @@ systemd:
         [Service]
         Type=oneshot
         TimeoutStartSec=0
-        ExecStartPre=/usr/bin/sh -c "network rm flatcar || true"
+        ExecStartPre=/usr/bin/sh -c "docker network rm flatcar || true"
         ExecStart=/usr/bin/docker network create flatcar
         RemainAfterExit=yes
         [Install]
@@ -55,18 +55,6 @@ passwd:
       ssh_authorized_keys: 
         ${ssh_keys}
 storage:
-  disks: 
-    - device: /dev/nvme1n1
-      wipe_table: true 
-      partitions: 
-        - label: swap
-          type_guid: 0657FD6D-A4AB-43C4-84E5-0933C84B4F4F
-  filesystems:
-    - device: /dev/disk/by-partlabel/swap
-      format: swap
-      wipe_filesystem: true
-      label: swap
-      with_mount_unit: true
   files:
     - path: /home/core/nginx/default.conf
       filesystem: root

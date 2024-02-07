@@ -45,11 +45,6 @@ resource "aws_instance" "flatcar" {
   subnet_id              = local.target_subnet.id
   vpc_security_group_ids = [aws_security_group.flatcar.id]
 
-  ebs_block_device {
-    volume_size = "2" # GB
-    device_name = "/dev/sdf"
-  }
-
   tags = {
     Name = var.instance_name
   }
