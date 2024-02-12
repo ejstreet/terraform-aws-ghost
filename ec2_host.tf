@@ -1,5 +1,5 @@
 resource "aws_key_pair" "ssh" {
-  key_name   = var.instance_name
+  key_name   = var.deployment_name
   public_key = var.ssh_keys[0]
 }
 
@@ -46,7 +46,7 @@ resource "aws_instance" "flatcar" {
   vpc_security_group_ids = [aws_security_group.flatcar.id]
 
   tags = {
-    Name = var.instance_name
+    Name = var.deployment_name
   }
 
   user_data_replace_on_change = true
@@ -69,16 +69,7 @@ locals {
     database__connection__user     = "root",
     database__connection__host     = aws_db_instance.ghost.address,
     database__connection__password = var.db_password
-
-    mail__from                      = aws_ses_email_identity.default.email
-    mail__transport                 = "SMTP"
-    mail__logger                    = "true"
-    mail__options__host             = "email-smtp.${var.aws_region}.amazonaws.com"
-    mail__options__port             = "465"
-    mail__options__service          = "SES"
-    mail__options__secureConnection = "true"
-    mail__options__auth__user       = aws_iam_access_key.smtp_user.id
-    mail__options__auth__pass       = aws_iam_access_key.smtp_user.ses_smtp_password_v4
+    database__connection__ssl      = "Amazon RDS"
 
     url = "https://${var.domain_name}"
   }
@@ -89,7 +80,7 @@ data "template_file" "machine-configs" {
 
   vars = {
     ssh_keys    = jsonencode(var.ssh_keys)
-    name        = var.instance_name
+    name        = var.deployment_name
     ghost_image = var.ghost_image
     host        = var.domain_name
     env_vars    = join(" ", [for k, v in local.env_vars : "-e ${k}=${v}"])

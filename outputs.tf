@@ -45,7 +45,8 @@ output "dns_mail_from_txt_record" {
 
 output "ec2_connection_details" {
   value = {
-    public_ip = aws_instance.flatcar.public_ip
-    username  = "core"
+    public_dns = aws_instance.flatcar.public_dns
+    public_ip  = aws_instance.flatcar.public_ip
+    username   = "core"
   }
 }

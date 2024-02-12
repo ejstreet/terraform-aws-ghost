@@ -1,7 +1,7 @@
-variable "instance_name" {
+variable "deployment_name" {
   type        = string
-  description = "Name used for the instance"
-  default     = "Ghost"
+  description = "Name used for the deployment."
+  default     = "ghost"
 }
 
 variable "domain_name" {

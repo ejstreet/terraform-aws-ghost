@@ -1,7 +1,7 @@
 module "vpc" {
   source = "./vpc"
 
-  name = var.instance_name
+  name = var.deployment_name
 
   vpc_cidr = var.vpc.cidr
 
