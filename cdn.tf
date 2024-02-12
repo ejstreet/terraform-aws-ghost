@@ -34,11 +34,29 @@ resource "aws_cloudfront_distribution" "ghost" {
     target_origin_id = aws_instance.flatcar.id
     compress         = true
 
-    cache_policy_id            = data.aws_cloudfront_cache_policy.caching-optimized.id
+    cache_policy_id            = aws_cloudfront_cache_policy.caching-optimized-with-ghost-cookies.id
     origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all-viewer.id
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.simple-cors.id
 
     viewer_protocol_policy = "redirect-to-https"
+  }
+
+  dynamic "ordered_cache_behavior" {
+    for_each = toset(var.cached_paths)
+    content {
+      allowed_methods = ["GET", "HEAD"]
+      cached_methods  = ["GET", "HEAD"]
+
+      cache_policy_id            = data.aws_cloudfront_cache_policy.optimized.id
+      origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all-viewer.id
+      response_headers_policy_id = data.aws_cloudfront_response_headers_policy.simple-cors.id
+
+      compress = true
+
+      path_pattern           = ordered_cache_behavior.value
+      target_origin_id       = aws_instance.flatcar.id
+      viewer_protocol_policy = "redirect-to-https"
+    }
   }
 
   dynamic "ordered_cache_behavior" {
@@ -51,10 +69,7 @@ resource "aws_cloudfront_distribution" "ghost" {
       origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all-viewer.id
       response_headers_policy_id = data.aws_cloudfront_response_headers_policy.simple-cors.id
 
-      compress    = true
-      default_ttl = 0
-      max_ttl     = 0
-      min_ttl     = 0
+      compress = true
 
       path_pattern           = ordered_cache_behavior.value
       target_origin_id       = aws_instance.flatcar.id
@@ -80,7 +95,7 @@ resource "aws_acm_certificate" "cdn_cert" {
   validation_method = "DNS"
 
   tags = {
-    Name = var.instance_name
+    Name = var.deployment_name
   }
 
   lifecycle {
@@ -88,7 +103,39 @@ resource "aws_acm_certificate" "cdn_cert" {
   }
 }
 
-data "aws_cloudfront_cache_policy" "caching-optimized" {
+# Avoid serving cached, logged in pages to anonymous users
+resource "aws_cloudfront_cache_policy" "caching-optimized-with-ghost-cookies" {
+  name = "CachingOptimizedwithCookies"
+
+  min_ttl     = 10
+  max_ttl     = 31536000
+  default_ttl = 86400
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    enable_accept_encoding_brotli = true
+    enable_accept_encoding_gzip   = true
+
+    cookies_config {
+      cookie_behavior = "whitelist"
+
+      cookies {
+        items = [
+          "ghost-members-ssr",
+        ]
+      }
+    }
+
+    headers_config {
+      header_behavior = "none"
+    }
+
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
+}
+
+data "aws_cloudfront_cache_policy" "optimized" {
   name = "Managed-CachingOptimized"
 }
 
@@ -97,7 +144,7 @@ data "aws_cloudfront_cache_policy" "disabled" {
 }
 
 data "aws_cloudfront_origin_request_policy" "all-viewer" {
-  name = "Managed-AllViewer"
+  name = "Managed-AllViewerAndCloudFrontHeaders-2022-06"
 }
 
 data "aws_cloudfront_response_headers_policy" "simple-cors" {

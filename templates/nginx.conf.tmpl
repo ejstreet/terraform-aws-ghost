@@ -1,0 +1,14 @@
+server {
+  listen       80 default_server;
+  listen  [::]:80 default_server;
+
+  location / {
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $http_cloudfront_forwarded_proto;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Host $host;
+    proxy_pass http://ghost:2368;
+  }
+
+  client_max_body_size 50m;
+}

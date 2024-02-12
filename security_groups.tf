@@ -4,7 +4,7 @@
 
 resource "aws_security_group" "flatcar" {
   name   = "Flatcar"
-  vpc_id = module.vpc.vpc_id
+  vpc_id = aws_vpc.this.id
 }
 
 data "aws_ec2_managed_prefix_list" "cloudfront" {
@@ -43,7 +43,7 @@ resource "aws_vpc_security_group_egress_rule" "to_all" {
 
 resource "aws_security_group" "db" {
   name   = "Database"
-  vpc_id = module.vpc.vpc_id
+  vpc_id = aws_vpc.this.id
 }
 
 resource "aws_vpc_security_group_ingress_rule" "flatcar_to_db" {

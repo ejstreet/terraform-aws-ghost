@@ -2,6 +2,18 @@ variant: flatcar
 version: 1.0.0
 systemd:
   units:
+    - name: data.mount
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Mount persistent data to /data
+        Before=local-fs.target
+        [Mount]
+        What=/dev/disk/by-label/persistent-data
+        Where=/data
+        Type=ext4
+        [Install]
+        WantedBy=local-fs.target
     - name: docker-network.service
       enabled: true
       contents: |
@@ -27,7 +39,7 @@ systemd:
         [Service]
         TimeoutStartSec=0
         ExecStartPre=-/usr/bin/docker rm --force ghost
-        ExecStart=/usr/bin/docker run --name ghost --net flatcar --pull always --log-driver=journald -v /home/core/ghost/:/var/lib/ghost/content ${env_vars} docker.io/${ghost_image}
+        ExecStart=/usr/bin/docker run --name ghost --net flatcar --pull always --log-driver=journald -v /data/ghost/:/var/lib/ghost/content ${env_vars} docker.io/${ghost_image}
         ExecStop=/usr/bin/docker stop ghost
         Restart=always
         RestartSec=5s
@@ -55,23 +67,15 @@ passwd:
       ssh_authorized_keys: 
         ${ssh_keys}
 storage:
+  filesystems:
+    - device: ${mount_device_name}
+      format: ext4
+      wipe_filesystem: false
+      label: persistent-data
   files:
     - path: /home/core/nginx/default.conf
       filesystem: root
       mode: 0755
       contents:
         inline: |
-          server {
-            listen       80 default_server;
-            listen  [::]:80 default_server;
-
-            location / {
-              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-              proxy_set_header X-Forwarded-Proto https;
-              proxy_set_header X-Real-IP $remote_addr;
-              proxy_set_header Host ${host};
-              proxy_pass http://ghost:2368;
-            }
-
-            client_max_body_size 50m;
-          }
+          ${nginx_config}      
