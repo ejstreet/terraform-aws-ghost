@@ -77,6 +77,22 @@ resource "aws_cloudfront_distribution" "ghost" {
     }
   }
 
+  // Allow all methods on explicitly the root path, as some functions POST to "/"
+  ordered_cache_behavior {
+    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods  = ["GET", "HEAD"]
+
+    cache_policy_id            = aws_cloudfront_cache_policy.caching-optimized-with-ghost-cookies.id
+    origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all-viewer.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.simple-cors.id
+
+    compress = true
+
+    path_pattern           = "/"
+    target_origin_id       = aws_instance.flatcar.id
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
   restrictions {
     geo_restriction {
       restriction_type = "none"
